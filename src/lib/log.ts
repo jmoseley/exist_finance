@@ -17,19 +17,19 @@ export class Log {
     }
   }
 
-  public trace(message: string, source?: string) {
+  public trace(message: any, source?: string) {
     return this.generateMessage('trace', message, source || this.source);
   }
 
-  public info(message: string, source?: string) {
+  public info(message: any, source?: string) {
     return this.generateMessage('info', message, source || this.source);
   }
 
-  public warn(message: string, source?: string) {
+  public warn(message: any, source?: string) {
     return this.generateMessage('warn', message, source || this.source);
   }
 
-  public error(message: string, source?: string) {
+  public error(message: any, source?: string) {
     return this.generateMessage('error', message, source || this.source);
   }
 }

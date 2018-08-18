@@ -14,7 +14,7 @@ export class Auth {
     domain,
     redirectUri: 'http://localhost:3000/callback',
     responseType: 'token id_token',
-    scope: 'openid',
+    scope: 'openid profile email',
   });
 
   constructor() {
@@ -31,8 +31,9 @@ export class Auth {
   public handleAuthentication() {
     this.auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
-        this.setSession(authResult);
-        history.replace('/');
+        this.setSession(authResult).then(() => {
+          history.replace('/');
+        });
       } else if (err) {
         history.replace('/');
         log.error(err.toString());
@@ -40,11 +41,11 @@ export class Auth {
     });
   }
 
-  public getAccessToken() {
-    return localStorage.getItem('access_token');
+  public getExistAccessToken() {
+    return localStorage.getItem('exist_access_token');
   }
 
-  public setSession(authResult: auth0.Auth0DecodedHash) {
+  public async setSession(authResult: auth0.Auth0DecodedHash) {
     if (!authResult.expiresIn || !authResult.accessToken || !authResult.idToken) {
       log.error(`Invalid result, cannot set session.`);
       return;
@@ -55,8 +56,19 @@ export class Auth {
     localStorage.setItem('access_token', authResult.accessToken);
     localStorage.setItem('id_token', authResult.idToken);
     localStorage.setItem('expires_at', expiresAt);
+
+    const userInfo = await this.getUserInfo(authResult.accessToken);
+
+    if (userInfo) {
+      // Super hack to get around Auth0 restrictions! The connector is configured to store the accessToken in
+      // the nickname field of the userProfile.
+      localStorage.setItem('exist_access_token', userInfo.nickname);
+    } else {
+      log.warn(`Unable to set Exist access token.`);
+    }
+
     // navigate to the home route
-    history.replace('/home');
+    history.replace('/');
   }
 
   public logout() {
@@ -78,6 +90,22 @@ export class Auth {
 
     const expiresAt = JSON.parse(expiresAtString);
     return new Date().getTime() < expiresAt;
+  }
+
+  private async getUserInfo(at: string): Promise<auth0.Auth0UserProfile | null> {
+    const accessToken = at;
+    if (!accessToken) {
+      return null;
+    }
+
+    return new Promise<auth0.Auth0UserProfile>((resolve, reject) => {
+      this.auth0.client.userInfo(accessToken as string, (err, userProfile) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(userProfile);
+      });
+    });
   }
 }
 
