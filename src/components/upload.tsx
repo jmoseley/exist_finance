@@ -40,7 +40,7 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
     }
 
     // Use the header row to validate input.
-    if (rows[0][0] !== 'Date' || rows[0][3] !== 'Amount') {
+    if (rows[0][0] !== 'Date' || rows[0][3] !== 'Amount' || rows[0][4] !== 'Transaction Type') {
       alert('Invalid CSV uploaded.');
       return;
     }
@@ -96,13 +96,18 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
     try {
       const date = new Date(row[0]);
 
-      if (!row[0] || !row[3] || isNaN(date.getTime())) {
+      if (!row[0] || !row[3] || isNaN(date.getTime()) || (row[4] !== 'credit' && row[4] !== 'debit')) {
         this.log.warn(`Invalid row: '${row.join(',')}' with length: ${row.length}`);
         return null;
       }
 
+      let amount = parseFloat(row[3]);
+      if (row[4] === 'credit') {
+        amount = -amount;
+      }
+
       return {
-        amount: parseFloat(row[3]),
+        amount,
         date: dateformat(date, 'yyyy-mm-dd'),
       };
     } catch (error) {
