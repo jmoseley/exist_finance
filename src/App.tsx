@@ -1,5 +1,8 @@
+import { AppBar, Grid, Toolbar, Typography } from '@material-ui/core';
 import * as React from 'react';
+
 import './App.css';
+
 import LoginComponent from './components/login';
 import LogoutComponent from './components/logout';
 import UploadCsvComponent from './components/upload';
@@ -10,20 +13,30 @@ class App extends LoggedComponent<App.IProps> {
   public render() {
     const { isAuthenticated } = this.props.auth;
 
-    this.log.info(`isAuth: ${isAuthenticated()}`);
-
     return (
-      <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">Exist + Mint Connector</h1>
-        </header>
-        {!isAuthenticated() && <LoginComponent auth={this.props.auth} />}
-        {isAuthenticated() && (
-          <div>
-            <UploadCsvComponent auth={this.props.auth} />
-            <LogoutComponent auth={this.props.auth} />
-          </div>
-        )}
+      <div>
+        <AppBar position="sticky">
+          <Toolbar>
+            <Grid container={true} justify="space-between">
+              <Typography variant="title" color="textSecondary">
+                Exist + Mint!
+              </Typography>
+              {isAuthenticated() && <LogoutComponent auth={this.props.auth} />}
+            </Grid>
+          </Toolbar>
+        </AppBar>
+        <Grid className="content" container={true} justify="space-around">
+          {!isAuthenticated() && (
+            <Grid item={true}>
+              <LoginComponent auth={this.props.auth} />
+            </Grid>
+          )}
+          {isAuthenticated() && (
+            <Grid item={true}>
+              <UploadCsvComponent auth={this.props.auth} />
+            </Grid>
+          )}
+        </Grid>
       </div>
     );
   }

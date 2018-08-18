@@ -1,4 +1,7 @@
+import { Button, Grid } from '@material-ui/core';
 import * as React from 'react';
+
+import './login.css';
 
 import { Auth } from '../lib/auth';
 import LoggedComponent from '../lib/logged_component';
@@ -10,11 +13,11 @@ export interface IProps {
 export default class LoginComponent extends LoggedComponent<IProps> {
   public render() {
     return (
-      <div>
-        <a href="#" onClick={this.onClick}>
+      <Grid className="login-container" container={true} alignItems="center" justify="center">
+        <Button variant="contained" onClick={this.onClick}>
           Connect to Exist
-        </a>
-      </div>
+        </Button>
+      </Grid>
     );
   }
 

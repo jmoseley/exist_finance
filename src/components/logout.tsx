@@ -1,3 +1,4 @@
+import Button from '@material-ui/core/Button';
 import * as React from 'react';
 
 import { Auth } from '../lib/auth';
@@ -11,9 +12,9 @@ export default class LogoutComponent extends LoggedComponent<IProps> {
   public render() {
     return (
       <div>
-        <a href="#" onClick={this.onClick}>
+        <Button variant="contained" onClick={this.onClick}>
           Logout
-        </a>
+        </Button>
       </div>
     );
   }
