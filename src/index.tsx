@@ -1,16 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import App from './App';
+
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
+import { makeMainRoutes } from './routes';
 
-// Add these lines:
 if (process.env.NODE_ENV !== 'production') {
   localStorage.setItem('debug', 'exist_plus_mint:*');
 }
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('root') as HTMLElement
-);
+ReactDOM.render(<BrowserRouter>{makeMainRoutes()}</BrowserRouter>, document.getElementById('root') as HTMLElement);
 registerServiceWorker();

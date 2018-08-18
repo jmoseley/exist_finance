@@ -1,9 +1,16 @@
 import * as React from 'react';
 import './App.css';
-import ConnectToExistComponent from './components/connect_to_exist';
+import LoginComponent from './components/login';
+import LogoutComponent from './components/logout';
+import { Auth } from './lib/auth';
+import LoggedComponent from './lib/logged_component';
 
-class App extends React.Component {
+class App extends LoggedComponent<App.IProps> {
   public render() {
+    const { isAuthenticated, getAccessToken } = this.props.auth;
+
+    this.log.info(`isAuth: ${isAuthenticated()} accessToken: ${getAccessToken()}`);
+
     return (
       <div className="App">
         <header className="App-header">
@@ -12,9 +19,16 @@ class App extends React.Component {
         <p className="App-intro">
           To get started, edit <code>src/App.tsx</code> and save to reload.
         </p>
-        <ConnectToExistComponent />
+        {!isAuthenticated() && <LoginComponent auth={this.props.auth} />}
+        {isAuthenticated() && <LogoutComponent auth={this.props.auth} />}
       </div>
     );
+  }
+}
+
+namespace App {
+  export interface IProps {
+    auth: Auth;
   }
 }
 

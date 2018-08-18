@@ -1,8 +1,7 @@
 import * as React from 'react';
 const autobind = require('react-autobind'); //tslint:disable-line
 
-import { Log } from "./log";
-
+import { Log } from './log';
 
 export default class LoggedComponent<P = {}, S = {}, SS = any> extends React.Component<P, S, SS> {
   protected readonly log: Log;
