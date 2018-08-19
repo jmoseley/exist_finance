@@ -16,6 +16,24 @@ export default class FaqComponent extends LoggedComponent {
         <p />
         <ExpansionPanel>
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subheading">How do I use this?</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <Typography>
+              To start, you need to{' '}
+              <a
+                target="_blank"
+                href="https://help.mint.com/Accounts-and-Transactions/888960591/How-do-you-export-transaction-data.htm">
+                download recent transactions
+              </a>{' '}
+              from Mint. You probably want to download transactions from all accounts. Once you have downloaded the CSV
+              file upload it to this tool and daily summaries of $ spent will be sent to Exist. You will need to do this
+              on a semi-regular basis to keep Exist up to date.
+            </Typography>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="subheading">What is this?</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
