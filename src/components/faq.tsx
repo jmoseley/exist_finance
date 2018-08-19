@@ -2,7 +2,7 @@ import { ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, Typograph
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import * as React from 'react';
 
-import './faq_component.css';
+import './faq.css';
 
 import LoggedComponent from '../lib/logged_component';
 

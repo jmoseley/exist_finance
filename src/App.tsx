@@ -3,7 +3,8 @@ import * as React from 'react';
 
 import './App.css';
 
-import FaqComponent from './components/faq_component';
+import FaqComponent from './components/faq';
+import FooterComponent from './components/footer';
 import LoginComponent from './components/login';
 import LogoutComponent from './components/logout';
 import UploadCsvComponent from './components/upload';
@@ -26,21 +27,14 @@ class App extends LoggedComponent<App.IProps> {
             </Grid>
           </Toolbar>
         </AppBar>
-        <Grid className="content" container={true} justify="space-around">
-          {!isAuthenticated() && (
-            <Grid className="main" item={true}>
-              <LoginComponent auth={this.props.auth} />
-            </Grid>
-          )}
-          {isAuthenticated() && (
-            <Grid className="main" item={true}>
-              <UploadCsvComponent auth={this.props.auth} />
-            </Grid>
-          )}
-          <Grid item={true}>
-            <FaqComponent />
-          </Grid>
-        </Grid>
+        <div className="content">
+          <div className="main">
+            {!isAuthenticated() && <LoginComponent auth={this.props.auth} />}
+            {isAuthenticated() && <UploadCsvComponent auth={this.props.auth} />}
+          </div>
+          <FaqComponent />
+          <FooterComponent />
+        </div>
       </div>
     );
   }

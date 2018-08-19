@@ -3,6 +3,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
+import 'typeface-roboto';
+
 import './index.css';
 import theme from './lib/theme';
 import registerServiceWorker from './registerServiceWorker';
