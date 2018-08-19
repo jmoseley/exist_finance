@@ -20,8 +20,17 @@ export default class FaqComponent extends LoggedComponent {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <Typography>
-              This app is a tool that allows you to sync data from Mint (a common tool for budgeting and tracking
-              financial data) to Exist, a tool that helps you find trends amongst your personal data.
+              This app is a tool that allows you to sync data from Mint to Exist.
+              <p />
+              <a target="_blank" href="https://www.mint.com">
+                Mint
+              </a>{' '}
+              is a tool used for budgeting and fincacial organiztion.
+              <br />
+              <a target="_blank" href="https://www.exist.io">
+                Exist
+              </a>{' '}
+              is a tool to help find trends and relationships between various sources of personal data.
             </Typography>
           </ExpansionPanelDetails>
         </ExpansionPanel>
@@ -31,8 +40,8 @@ export default class FaqComponent extends LoggedComponent {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <Typography>
-              No! This tool runs entirely in your browser. Your financial information is never sent anywhere. You can
-              check out the source code on{' '}
+              No! This tool runs entirely in your browser. Your financial data is never sent anywhere. You can check out
+              the source code on{' '}
               <a target="_blank" href="https://github.com/jmoseley/exist_finance">
                 Github
               </a>
