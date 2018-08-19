@@ -27,8 +27,6 @@ export const makeMainRoutes = () => {
       <div>
         <Route path="/" render={renderApp} />
         <Route path="/callback" render={handleAuthCallbackRoute} />
-        {/* This is needed to support the deployed to Github case. */}
-        <Route path="/exist_finance/callback" render={handleAuthCallbackRoute} />
       </div>
     </Router>
   );

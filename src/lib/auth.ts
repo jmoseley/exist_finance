@@ -7,7 +7,7 @@ const domain = 'jmoseley.auth0.com';
 
 const callbackUrl =
   process.env.NODE_ENV === 'production'
-    ? 'https://jmoseley.github.io/exist_finance/callback'
+    ? 'http://http://exist-mint.jeremymoseley.net/callback'
     : 'http://localhost:3000/callback';
 
 const log = new Log(`Auth`);
