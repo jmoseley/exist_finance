@@ -22,13 +22,15 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
     }
 
     return (
-      <CSVReader.default
-        cssClass="csv-input"
-        label="Select CSV with Mint transactions"
-        onFileLoaded={this.onUpload}
-        onError={this.onUploadError}
-        inputId="Transactions"
-      />
+      <div className="upload-wrapper">
+        <CSVReader.default
+          cssClass="csv-input"
+          label="Select CSV with Mint transactions"
+          onFileLoaded={this.onUpload}
+          onError={this.onUploadError}
+          inputId="Transactions"
+        />
+      </div>
     );
   }
 

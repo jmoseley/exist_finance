@@ -5,3 +5,9 @@
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
+.upload-wrapper {
+  width: 50%;
+  text-align: center;
+  margin: auto;
+}
