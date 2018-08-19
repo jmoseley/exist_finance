@@ -5,6 +5,11 @@ import { Log } from './log';
 const clientId = 'uA1Sjl3BZ3PEpcTsKmnwjDsTm5O2pxmc';
 const domain = 'jmoseley.auth0.com';
 
+const callbackUrl =
+  process.env.NODE_ENV === 'production'
+    ? 'https://jmoseley.github.io/exist_finance/callback'
+    : 'http://localhost:3000/callback';
+
 const log = new Log(`Auth`);
 
 export class Auth {
@@ -12,7 +17,7 @@ export class Auth {
     audience: `https://${domain}/userinfo`,
     clientID: clientId,
     domain,
-    redirectUri: 'http://localhost:3000/callback',
+    redirectUri: callbackUrl,
     responseType: 'token id_token',
     scope: 'openid profile email',
   });
