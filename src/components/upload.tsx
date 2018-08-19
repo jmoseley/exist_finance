@@ -18,7 +18,11 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
 
   public render() {
     if (this.state.uploading) {
-      return <div>Please wait...</div>;
+      return (
+        <div className="upload-wrapper">
+          <div className="csv-input">Please wait...</div>
+        </div>
+      );
     }
 
     return (
