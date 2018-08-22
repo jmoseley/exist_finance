@@ -12,6 +12,8 @@ const CSVReader = require('react-csv-reader'); // tslint:disable-line
 
 const MAX_BACKLOG = 100; // days
 
+const PAYCHECK_CATEGORY = 'Paycheck';
+
 import { Auth } from '../lib/auth';
 import LoggedComponent from '../lib/logged_component';
 import PreferenceStore, { Preferences } from '../lib/preferences';
@@ -19,6 +21,7 @@ import PreferenceStore, { Preferences } from '../lib/preferences';
 class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, UploadCsvComponent.IState> {
   public state = {
     // todo: Redux or something.
+    filterPaycheck: PreferenceStore.getPreference(Preferences.Names.FILTER_PAYCHECKS),
     tagPaychecks: PreferenceStore.getPreference(Preferences.Names.TAG_PAYCHECK),
     uploading: false,
   };
@@ -40,12 +43,27 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
                 />
               </Grid>
             </Grid>
-            <Grid item={true}>
+            <Grid xs={12} item={true}>
               <FormControlLabel
-                control={<Checkbox color="primary" checked={this.state.tagPaychecks} onChange={this.onChangeTag} />}
+                control={
+                  <Checkbox color="primary" checked={this.state.tagPaychecks} onChange={this.onChangeTagPaychecks} />
+                }
                 label="Tag Paychecks"
               />
               <Tooltip title="This will add a tag to all days that are recognized as pay day. This is based on the category in Mint, &quot;Paycheck&quot;.">
+                <IconButton aria-label="Help">
+                  <HelpIcon />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+            <Grid xs={12} item={true}>
+              <FormControlLabel
+                control={
+                  <Checkbox color="primary" checked={this.state.filterPaycheck} onChange={this.onChangeFilterCredit} />
+                }
+                label="Filter Paychecks"
+              />
+              <Tooltip title="This will filter out all paychecks from the aggregation of money spent. Provides a more reaslistic view of spending as opposed to keeping a balance.">
                 <IconButton aria-label="Help">
                   <HelpIcon />
                 </IconButton>
@@ -86,6 +104,7 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
 
     const aggregated = _.mapValues(transactionsByDate, (transactions) => {
       return _(transactions)
+        .filter((t) => !this.state.filterPaycheck || (this.state.filterPaycheck && t.category !== PAYCHECK_CATEGORY))
         .map('amount')
         .sum();
     });
@@ -114,13 +133,14 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
     this.setState({ uploading: true });
     try {
       this.log.info(`Submitting attributes: ${JSON.stringify(attributes)}`);
-      this.log.info(`Result: ${JSON.stringify(await existClient.updateMoneySpent(accessToken, attributes))}`);
+      const attributeResult = await existClient.updateMoneySpent(accessToken, attributes);
+      this.log.info(`Result: ${JSON.stringify(attributeResult)}`);
 
       if (this.state.tagPaychecks) {
         const payCheckDays = _(transactionsByDate)
           .toPairs()
           .map(([date, transactions]) => {
-            return _.some(transactions, (t) => t.category === 'Paycheck') ? date : null;
+            return _.some(transactions, (t) => t.category === PAYCHECK_CATEGORY) ? date : null;
           })
           .filter((dateStr) => {
             if (!dateStr) {
@@ -133,8 +153,8 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
           .value();
 
         this.log.info(`Tagging Days for paychecks: ${JSON.stringify(payCheckDays)}`);
-
-        this.log.info(`Result: ${JSON.stringify(await existClient.tagPaychecks(accessToken, payCheckDays))}`);
+        const tagResult = await existClient.tagPaychecks(accessToken, payCheckDays);
+        this.log.info(`Result: ${JSON.stringify(tagResult)}`);
       }
     } finally {
       this.setState({ uploading: false });
@@ -175,10 +195,16 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
     this.log.error(error);
   }
 
-  private onChangeTag(event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
+  private onChangeTagPaychecks(event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
     // todo: Redux or something to keep these linked.
     PreferenceStore.setPreference(Preferences.Names.TAG_PAYCHECK, checked);
     this.setState({ ...this.state, tagPaychecks: checked });
+  }
+
+  private onChangeFilterCredit(event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
+    // todo: Redux or something to keep these linked.
+    PreferenceStore.setPreference(Preferences.Names.FILTER_PAYCHECKS, checked);
+    this.setState({ ...this.state, filterPaycheck: checked });
   }
 }
 
@@ -190,6 +216,7 @@ namespace UploadCsvComponent {
   export interface IState {
     uploading: boolean;
     tagPaychecks: boolean;
+    filterPaycheck: boolean;
   }
 }
 
