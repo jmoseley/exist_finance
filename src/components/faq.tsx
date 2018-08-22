@@ -9,7 +9,7 @@ import LoggedComponent from '../lib/logged_component';
 export default class FaqComponent extends LoggedComponent {
   public render() {
     return (
-      <div className="content">
+      <div className="faq-content">
         <Typography variant="title" align="center">
           FAQ
         </Typography>

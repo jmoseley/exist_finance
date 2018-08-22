@@ -1,3 +1,5 @@
+import { Checkbox, FormControlLabel, Grid, IconButton, Tooltip } from '@material-ui/core';
+import HelpIcon from '@material-ui/icons/Help';
 import * as dateformat from 'dateformat';
 import * as _ from 'lodash';
 import * as React from 'react';
@@ -8,33 +10,50 @@ import './upload.css';
 // Whoo types!
 const CSVReader = require('react-csv-reader'); // tslint:disable-line
 
+const MAX_BACKLOG = 100; // days
+
 import { Auth } from '../lib/auth';
 import LoggedComponent from '../lib/logged_component';
+import PreferenceStore, { Preferences } from '../lib/preferences';
 
 class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, UploadCsvComponent.IState> {
   public state = {
+    // todo: Redux or something.
+    tagPaychecks: PreferenceStore.getPreference(Preferences.Names.TAG_PAYCHECK),
     uploading: false,
   };
 
   public render() {
-    if (this.state.uploading) {
-      return (
-        <div className="upload-wrapper">
-          <div className="csv-input">Please wait...</div>
-        </div>
-      );
-    }
-
     return (
-      <div className="upload-wrapper">
-        <CSVReader.default
-          cssClass="csv-input"
-          label="Select CSV with Mint transactions"
-          onFileLoaded={this.onUpload}
-          onError={this.onUploadError}
-          inputId="Transactions"
-        />
-      </div>
+      <Grid container={true} alignItems="center" justify="center">
+        {this.state.uploading && <div className="csv-input">Please wait...</div>}
+        {!this.state.uploading && (
+          <div>
+            <Grid xs={12} item={true}>
+              <Grid container={true} alignItems="center" justify="center">
+                <CSVReader.default
+                  cssClass="csv-input"
+                  label="Select CSV with Mint transactions"
+                  onFileLoaded={this.onUpload}
+                  onError={this.onUploadError}
+                  inputId="Transactions"
+                />
+              </Grid>
+            </Grid>
+            <Grid item={true}>
+              <FormControlLabel
+                control={<Checkbox color="primary" checked={this.state.tagPaychecks} onChange={this.onChangeTag} />}
+                label="Tag Paychecks"
+              />
+              <Tooltip title="This will add a tag to all days that are recognized as pay day. This is based on the category in Mint, &quot;Paycheck&quot;.">
+                <IconButton aria-label="Help">
+                  <HelpIcon />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+          </div>
+        )}
+      </Grid>
     );
   }
 
@@ -46,7 +65,12 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
     }
 
     // Use the header row to validate input.
-    if (rows[0][0] !== 'Date' || rows[0][3] !== 'Amount' || rows[0][4] !== 'Transaction Type') {
+    if (
+      rows[0][0] !== 'Date' ||
+      rows[0][3] !== 'Amount' ||
+      rows[0][4] !== 'Transaction Type' ||
+      rows[0][5] !== 'Category'
+    ) {
       alert('Invalid CSV uploaded.');
       return;
     }
@@ -77,19 +101,41 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
       .value();
 
     // Cap at 100 days worth of data.
-    if (attributes.length > 100) {
-      attributes = attributes.slice(0, 100);
+    if (attributes.length > MAX_BACKLOG) {
+      attributes = attributes.slice(0, MAX_BACKLOG);
     }
-
-    this.log.info(attributes);
 
     if (!confirm(`Are you sure you want to upload ${attributes.length} days worth of data to Exist?`)) {
       return;
     }
 
+    const submittedDates = new Set(_.map(attributes, (attr) => attr.date));
+
     this.setState({ uploading: true });
     try {
-      await existClient.updateMoneySpent(accessToken, attributes);
+      this.log.info(`Submitting attributes: ${JSON.stringify(attributes)}`);
+      this.log.info(`Result: ${JSON.stringify(await existClient.updateMoneySpent(accessToken, attributes))}`);
+
+      if (this.state.tagPaychecks) {
+        const payCheckDays = _(transactionsByDate)
+          .toPairs()
+          .map(([date, transactions]) => {
+            return _.some(transactions, (t) => t.category === 'Paycheck') ? date : null;
+          })
+          .filter((dateStr) => {
+            if (!dateStr) {
+              return false;
+            }
+
+            return submittedDates.has(dateStr);
+          })
+          .compact()
+          .value();
+
+        this.log.info(`Tagging Days for paychecks: ${JSON.stringify(payCheckDays)}`);
+
+        this.log.info(`Result: ${JSON.stringify(await existClient.tagPaychecks(accessToken, payCheckDays))}`);
+      }
     } finally {
       this.setState({ uploading: false });
     }
@@ -98,7 +144,7 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
   /**
    * Extract the data we care about from the CSV.
    */
-  private parseRow(row: string[]): { date: string; amount: number } | null {
+  private parseRow(row: string[]): { date: string; amount: number; category: string } | null {
     try {
       const date = new Date(row[0]);
 
@@ -114,6 +160,7 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
 
       return {
         amount,
+        category: row[5],
         date: dateformat(date, 'yyyy-mm-dd'),
       };
     } catch (error) {
@@ -127,6 +174,12 @@ class UploadCsvComponent extends LoggedComponent<UploadCsvComponent.IProps, Uplo
   private onUploadError(error: any) {
     this.log.error(error);
   }
+
+  private onChangeTag(event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
+    // todo: Redux or something to keep these linked.
+    PreferenceStore.setPreference(Preferences.Names.TAG_PAYCHECK, checked);
+    this.setState({ ...this.state, tagPaychecks: checked });
+  }
 }
 
 namespace UploadCsvComponent {
@@ -136,6 +189,7 @@ namespace UploadCsvComponent {
 
   export interface IState {
     uploading: boolean;
+    tagPaychecks: boolean;
   }
 }
 
