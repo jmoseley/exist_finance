@@ -22,10 +22,12 @@ class Preferences {
 namespace Preferences {
   export enum Names {
     TAG_PAYCHECK = 'TAG_PAYCHECK',
+    FILTER_PAYCHECKS = 'FILTER_CREDIT',
   }
 
   export const DefaultPreferences = {
     [Preferences.Names.TAG_PAYCHECK]: false,
+    [Preferences.Names.FILTER_PAYCHECKS]: true,
   };
 }
 
