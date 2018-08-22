@@ -1,4 +1,6 @@
 import axios from 'axios';
+import * as _ from 'lodash';
+
 import { Log } from './log';
 
 const log = new Log('ExistClient');
@@ -12,6 +14,14 @@ class ExistClient {
 
   public async acquireAttribute(accessToken: string, attributeName: string, active: boolean = true): Promise<void> {
     return await this.sendRequest('attributes/acquire/', accessToken, [{ name: attributeName, active }]);
+  }
+
+  public async tagPaychecks(accessToken: string, dates: string[]): Promise<any> {
+    return await this.tagDates(accessToken, _.map(dates, (date) => ({ date, value: 'paycheck_received' })));
+  }
+
+  public async tagDates(accessToken: string, tags: ExistClient.ITag[]): Promise<any> {
+    return await this.sendRequest('attributes/custom/append/', accessToken, tags);
   }
 
   public async updateMoneySpent(
@@ -38,7 +48,8 @@ class ExistClient {
       },
       method: data ? 'POST' : 'GET',
     };
-    log.info(options);
+    log.trace(`URL: ${baseUrl}${url}`);
+    log.trace(`Options: ${JSON.stringify(options)}`);
     const result = await axios(`${baseUrl}${url}`, options);
 
     return result;
@@ -55,6 +66,11 @@ namespace ExistClient {
 
   export interface IStringUserAttributeValue {
     date: string; // YYYY-mm-dd
+    value: string;
+  }
+
+  export interface ITag {
+    date: string; // YYYY-mm-dd - technically this optional to upload to the current day.
     value: string;
   }
 }
